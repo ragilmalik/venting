@@ -201,6 +201,38 @@
             box-shadow: 0 4px 12px rgba(244, 33, 46, 0.3);
         }
 
+        .btn-export, .btn-export-all {
+            background: rgba(0, 186, 124, 0.2);
+            color: var(--success);
+            border-color: rgba(0, 186, 124, 0.4);
+        }
+
+        .btn-export:hover, .btn-export-all:hover {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 186, 124, 0.3);
+        }
+
+        .btn-export:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-export:disabled:hover {
+            background: rgba(0, 186, 124, 0.2);
+            color: var(--success);
+            box-shadow: none;
+        }
+
+        .online-users-card {
+            border-color: rgba(0, 186, 124, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 186, 124, 0.1);
+        }
+
+        .online-users-card .stat-value {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
         .posts-table-container {
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
