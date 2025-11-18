@@ -761,4 +761,87 @@ body {
     #onlineUsersCount {
         font-size: 13px;
     }
+
+    .compose-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .char-counter {
+        font-size: 12px;
+    }
+
+    .timeline-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .timeline-header h2 {
+        font-size: 18px;
+    }
+
+    .post-meta {
+        font-size: 12px;
+    }
+
+    .post-content {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 100%;
+        padding: 8px;
+    }
+
+    .header {
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    .logo h1 {
+        font-size: 18px;
+    }
+
+    .logo svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .compose-box {
+        padding: 12px;
+    }
+
+    #postContent {
+        font-size: 14px;
+        min-height: 80px;
+    }
+
+    .post {
+        padding: 12px;
+    }
+
+    .post-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .online-users-indicator {
+        bottom: 8px;
+        left: 8px;
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .online-users-indicator .online-icon {
+        width: 12px;
+        height: 12px;
+    }
+
+    #onlineUsersCount {
+        font-size: 12px;
+    }
 }
