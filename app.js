@@ -1,12 +1,12 @@
 /**
  * Venting Platform - Frontend Application
- * Twitter/X style anonymous posting
+ * Pure black glass theme with anonymous posting
  */
 
 // Configuration
 const CONFIG = {
     API_URL: '/api.php',
-    MAX_LENGTH: 5000,
+    MAX_LENGTH: 500,
     POSTS_PER_PAGE: 100,
     AUTO_REFRESH_INTERVAL: 30000,
     NOTIFICATION_DURATION: 3000
@@ -22,9 +22,10 @@ let isLoading = false;
 // DOM Elements
 const postContent = document.getElementById('postContent');
 const charCount = document.getElementById('charCount');
-const progressCircle = document.getElementById('progressCircle');
+const charCounter = document.querySelector('.char-counter');
 const postBtn = document.getElementById('postBtn');
 const postsContainer = document.getElementById('postsContainer');
+const postCountDisplay = document.getElementById('postCount');
 const loading = document.getElementById('loading');
 const pagination = document.getElementById('pagination');
 const prevBtn = document.getElementById('prevBtn');
@@ -69,44 +70,24 @@ function initializeEventListeners() {
             checkForNewPosts();
         }
     });
-
-    // Auto-grow textarea
-    postContent.addEventListener('input', () => {
-        postContent.style.height = 'auto';
-        postContent.style.height = Math.min(postContent.scrollHeight, 400) + 'px';
-    });
 }
 
 /**
- * Update character count and progress circle
+ * Update character count
  */
 function updateCharCount() {
     const length = postContent.value.length;
-    const percentage = length / CONFIG.MAX_LENGTH;
-    const circumference = 56.5;
+    charCount.textContent = length;
 
-    // Update circle
-    if (length > 0) {
-        const offset = circumference - (percentage * circumference);
-        progressCircle.style.strokeDashoffset = offset;
-
-        if (percentage > 1) {
-            progressCircle.style.stroke = '#f4212e';
-            charCount.textContent = length - CONFIG.MAX_LENGTH;
-            charCount.className = 'count-text error';
-        } else if (percentage > 0.9) {
-            progressCircle.style.stroke = '#ffd400';
-            charCount.textContent = CONFIG.MAX_LENGTH - length;
-            charCount.className = 'count-text warning';
-        } else {
-            progressCircle.style.stroke = '#1d9bf0';
-            charCount.textContent = '';
-            charCount.className = 'count-text';
-        }
+    // Update styling based on length
+    if (length > CONFIG.MAX_LENGTH * 0.9) {
+        charCounter.classList.add('warning');
+        charCounter.classList.remove('error');
+    } else if (length === CONFIG.MAX_LENGTH) {
+        charCounter.classList.add('error');
+        charCounter.classList.remove('warning');
     } else {
-        progressCircle.style.strokeDashoffset = circumference;
-        charCount.textContent = '';
-        charCount.className = 'count-text';
+        charCounter.classList.remove('warning', 'error');
     }
 
     postBtn.disabled = length === 0 || length > CONFIG.MAX_LENGTH;
@@ -121,7 +102,7 @@ async function createPost() {
     if (!content || content.length > CONFIG.MAX_LENGTH) return;
 
     postBtn.disabled = true;
-    postBtn.textContent = 'Posting...';
+    postBtn.innerHTML = '<div class="spinner" style="width: 18px; height: 18px; border-width: 2px;"></div> Posting...';
 
     try {
         const now = new Date();
@@ -142,9 +123,8 @@ async function createPost() {
         const data = await response.json();
 
         if (data.success) {
-            showNotification('Posted!');
+            showNotification('Posted successfully!', 'success');
             postContent.value = '';
-            postContent.style.height = 'auto';
             updateCharCount();
             loadPosts(1);
         } else {
@@ -155,7 +135,12 @@ async function createPost() {
         showNotification('Network error', 'error');
     } finally {
         postBtn.disabled = false;
-        postBtn.textContent = 'Post';
+        postBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+            Post
+        `;
     }
 }
 
@@ -181,6 +166,7 @@ async function loadPosts(page) {
             lastFetchTime = new Date().toISOString();
             displayPosts(data.posts);
             updatePagination(data.pagination);
+            updatePostCount(data.pagination.total_posts);
         } else {
             showEmptyState();
         }
@@ -221,18 +207,14 @@ function createPostElement(post) {
     const timeAgo = getTimeAgo(new Date(post.posted_at));
 
     article.innerHTML = `
-        <div class="post-avatar">
-            <div class="avatar" style="background: ${avatarColor};">A</div>
-        </div>
-        <div class="post-body">
-            <div class="post-header">
+        <div class="post-header">
+            <div class="post-avatar" style="background: ${avatarColor};">A</div>
+            <div class="post-meta">
                 <span class="post-author">Anonymous</span>
-                <span class="post-username">@anon</span>
-                <span class="post-separator">·</span>
-                <span class="post-time" title="${formatDateTime(post.posted_at)}">${timeAgo}</span>
+                <div class="post-time" title="${formatDateTime(post.posted_at)}">${timeAgo}</div>
             </div>
-            <div class="post-content">${escapeHtml(post.content)}</div>
         </div>
+        <div class="post-content">${escapeHtml(post.content)}</div>
     `;
 
     return article;
@@ -247,8 +229,8 @@ function showEmptyState() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.97-4.03 9-9 9a8.96 8.96 0 01-4.63-1.28l-4.08 1.36 1.36-4.08A8.96 8.96 0 013 12c0-4.97 4.03-9 9-9s9 4.03 9 9z"/>
             </svg>
-            <h3>Nothing to see here — yet</h3>
-            <p>When someone posts, it'll show up here.</p>
+            <h3>No posts yet</h3>
+            <p>Be the first to share your thoughts!</p>
         </div>
     `;
 }
@@ -267,6 +249,13 @@ function updatePagination(paginationData) {
     nextBtn.disabled = currentPage === totalPages;
 
     pagination.style.display = totalPages > 1 ? 'flex' : 'none';
+}
+
+/**
+ * Update post count
+ */
+function updatePostCount(totalPosts) {
+    postCountDisplay.textContent = `${totalPosts} ${totalPosts === 1 ? 'post' : 'posts'}`;
 }
 
 /**
@@ -368,19 +357,24 @@ function getTimeAgo(date) {
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
 
-    if (seconds < 5) return 'now';
-    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 5) return 'just now';
+    if (seconds < 60) return `${seconds}s ago`;
 
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 60) return `${minutes}m ago`;
 
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h`;
+    if (hours < 24) return `${hours}h ago`;
 
     const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d`;
+    if (days < 7) return `${days}d ago`;
 
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (days < 30) {
+        const weeks = Math.floor(days / 7);
+        return `${weeks}w ago`;
+    }
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 /**
