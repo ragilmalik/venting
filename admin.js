@@ -561,7 +561,8 @@ async function exportSelected() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `venting_posts_export_${Date.now()}.xlsx`;
+            const dateStr = formatDateForFilename();
+            a.download = `venting_export_selected_${selectedPosts.length}_${dateStr}.xlsx`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -606,7 +607,8 @@ async function exportAll() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `venting_posts_full_export_${Date.now()}.xlsx`;
+            const dateStr = formatDateForFilename();
+            a.download = `venting_export_all_${dateStr}.xlsx`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -618,6 +620,19 @@ async function exportAll() {
         console.error('Export failed:', error);
         showNotification('Export failed', 'error');
     }
+}
+
+/**
+ * Format date for filename (DD_MM_YYYY_HH_MM)
+ */
+function formatDateForFilename() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${day}_${month}_${year}_${hours}_${minutes}`;
 }
 
 /**
