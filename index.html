@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Anonymous venting platform - Share your thoughts freely and anonymously">
+    <title>Venting - Anonymous Thoughts</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background gradient overlay -->
+    <div class="bg-gradient"></div>
+
+    <!-- Main container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="glass-panel header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 8V16C21 18.7614 18.7614 21 16 21H8C5.23858 21 3 18.7614 3 16V8C3 5.23858 5.23858 3 8 3H16C18.7614 3 21 5.23858 21 8Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M7 12L10 15L17 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Venting
+                </h1>
+                <p class="tagline">Share your thoughts anonymously</p>
+            </div>
+        </header>
+
+        <!-- Post composer -->
+        <div class="glass-panel composer">
+            <div class="composer-header">
+                <h2>What's on your mind?</h2>
+                <span class="char-count"><span id="charCount">0</span> / 5000</span>
+            </div>
+            <textarea
+                id="postContent"
+                class="post-textarea"
+                placeholder="Type your thoughts here... (completely anonymous)"
+                maxlength="5000"
+            ></textarea>
+            <div class="composer-footer">
+                <div class="post-info">
+                    <svg class="info-icon" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Your post is completely anonymous</span>
+                </div>
+                <button id="postBtn" class="post-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Post
+                </button>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline">
+            <div class="timeline-header glass-panel">
+                <h2>Timeline</h2>
+                <div class="auto-refresh">
+                    <div class="refresh-indicator" id="refreshIndicator">
+                        <svg class="refresh-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M1 4V10H7M23 20V14H17M20.49 9C19.9828 7.56678 19.1209 6.28536 17.9845 5.27544C16.8482 4.26551 15.4745 3.55976 13.9917 3.22426C12.5089 2.88877 10.9652 2.93108 9.50481 3.34759C8.04437 3.76409 6.70772 4.54095 5.61 5.61L1 10M23 14L18.39 18.39C17.2923 19.4591 15.9556 20.2359 14.4952 20.6524C13.0348 21.0689 11.4911 21.1112 10.0083 20.7757C8.52547 20.4402 7.1518 19.7345 6.01547 18.7246C4.87913 17.7146 4.01717 16.4332 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Auto-updating</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posts container -->
+            <div id="postsContainer" class="posts-container">
+                <!-- Loading indicator -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Loading posts...</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination glass-panel" id="pagination" style="display: none;">
+                <button id="prevBtn" class="pagination-btn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Previous
+                </button>
+                <span class="page-info">
+                    Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                </span>
+                <button id="nextBtn" class="pagination-btn">
+                    Next
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2024 Venting - All thoughts are anonymous and free</p>
+        </footer>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
