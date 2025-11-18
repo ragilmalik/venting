@@ -12,7 +12,7 @@ define('DB_USER', 'your_db_user'); // Your database username
 define('DB_PASS', 'your_db_password'); // Your database password
 
 // Security settings
-define('MAX_POST_LENGTH', 5000);
+define('MAX_POST_LENGTH', 500);
 define('POSTS_PER_PAGE', 100);
 
 // Error reporting (set to false in production)
