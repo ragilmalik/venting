@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     loadPosts(1);
     startAutoRefresh();
+    startOnlineUsersTracking();
 });
 
 /**
@@ -384,4 +385,31 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Start online users tracking
+ */
+function startOnlineUsersTracking() {
+    // Update online users count immediately
+    updateOnlineUsersCount();
+
+    // Update every 30 seconds
+    setInterval(updateOnlineUsersCount, 30000);
+}
+
+/**
+ * Update online users count
+ */
+async function updateOnlineUsersCount() {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}?action=online_count`);
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('onlineUsersCount').textContent = data.count;
+        }
+    } catch (error) {
+        console.error('Failed to update online users count:', error);
+    }
 }

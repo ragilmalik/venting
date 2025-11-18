@@ -694,3 +694,71 @@ body {
     background: rgba(29, 155, 240, 0.3);
     color: var(--text-primary);
 }
+
+/* Online Users Indicator */
+.online-users-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 186, 124, 0.3);
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--success);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(0, 186, 124, 0.2);
+    z-index: 999;
+    transition: all 0.3s ease;
+    animation: slideInUp 0.6s ease-out 0.5s both;
+}
+
+.online-users-indicator:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-color: var(--success);
+    box-shadow:
+        0 6px 24px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(0, 186, 124, 0.4);
+    transform: translateY(-2px);
+}
+
+.online-users-indicator .online-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--success);
+}
+
+.online-users-indicator .pulse {
+    animation: pulse 2s ease-in-out infinite;
+    transform-origin: center;
+}
+
+#onlineUsersCount {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .online-users-indicator {
+        bottom: 12px;
+        left: 12px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .online-users-indicator .online-icon {
+        width: 14px;
+        height: 14px;
+    }
+
+    #onlineUsersCount {
+        font-size: 13px;
+    }
+}

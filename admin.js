@@ -8,6 +8,7 @@ let isLoggedIn = false;
 let posts = [];
 let selectedPosts = [];
 let stats = {};
+let onlineUsers = 0;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -120,9 +121,13 @@ async function handleLogout() {
  */
 async function showDashboard() {
     await loadStats();
+    await loadOnlineUsers();
     await loadPosts();
 
     renderDashboard();
+
+    // Start auto-refresh for online users
+    startOnlineUsersRefresh();
 }
 
 /**
@@ -144,6 +149,40 @@ async function loadStats() {
     } catch (error) {
         console.error('Failed to load stats:', error);
     }
+}
+
+/**
+ * Load online users count
+ */
+async function loadOnlineUsers() {
+    try {
+        const response = await fetch(ADMIN_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get_online_users' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            onlineUsers = data.count;
+            // Update UI if already rendered
+            const onlineUsersElement = document.getElementById('onlineUsersCount');
+            if (onlineUsersElement) {
+                onlineUsersElement.textContent = onlineUsers;
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load online users:', error);
+    }
+}
+
+/**
+ * Start online users auto-refresh
+ */
+function startOnlineUsersRefresh() {
+    // Refresh every 10 seconds
+    setInterval(loadOnlineUsers, 10000);
 }
 
 /**
@@ -200,6 +239,18 @@ function renderDashboard() {
                 <div class="stat-value">${stats.last_24h || 0}</div>
                 <div class="stat-label">Last 24 Hours</div>
             </div>
+            <div class="stat-card online-users-card">
+                <div class="stat-value" style="color: var(--success);">
+                    <span id="onlineUsersCount">${onlineUsers || 0}</span>
+                </div>
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; display: inline-block; margin-right: 4px; color: var(--success);">
+                        <circle cx="12" cy="12" r="10" opacity="0.2"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Online Now
+                </div>
+            </div>
         </div>
 
         <div class="controls-panel">
@@ -213,6 +264,12 @@ function renderDashboard() {
                     <input type="checkbox" class="checkbox" id="selectAll" onchange="toggleSelectAll()">
                     Select All
                 </label>
+                <button class="btn btn-export" onclick="exportSelected()" id="exportSelectedBtn" disabled>
+                    📥 Export Selected (<span id="exportSelectedCount">0</span>)
+                </button>
+                <button class="btn btn-export-all" onclick="exportAll()">
+                    📦 Export All Posts
+                </button>
                 <button class="btn btn-danger" onclick="deleteSelected()" id="deleteSelectedBtn" disabled>
                     Delete Selected (<span id="selectedCount">0</span>)
                 </button>
@@ -321,6 +378,14 @@ function updateSelection() {
 
     document.getElementById('selectedCount').textContent = selectedPosts.length;
     document.getElementById('deleteSelectedBtn').disabled = selectedPosts.length === 0;
+
+    // Update export button
+    const exportSelectedCount = document.getElementById('exportSelectedCount');
+    const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+    if (exportSelectedCount && exportSelectedBtn) {
+        exportSelectedCount.textContent = selectedPosts.length;
+        exportSelectedBtn.disabled = selectedPosts.length === 0;
+    }
 
     // Update select all checkbox
     const allCheckboxes = document.querySelectorAll('.post-checkbox');
@@ -463,6 +528,96 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Export selected posts to XLSX
+ */
+async function exportSelected() {
+    if (selectedPosts.length === 0) {
+        return;
+    }
+
+    try {
+        showNotification(`Preparing to export ${selectedPosts.length} post(s)...`, 'success');
+
+        const response = await fetch(ADMIN_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'export_xlsx',
+                post_ids: selectedPosts
+            })
+        });
+
+        // Check if response is JSON (error) or file (success)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            showNotification(data.error || 'Export failed', 'error');
+        } else {
+            // Success - download file
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `venting_posts_export_${Date.now()}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            showNotification(`Successfully exported ${selectedPosts.length} post(s)!`, 'success');
+        }
+    } catch (error) {
+        console.error('Export failed:', error);
+        showNotification('Export failed', 'error');
+    }
+}
+
+/**
+ * Export all posts to XLSX
+ */
+async function exportAll() {
+    if (!confirm('Export all posts to XLSX? This may take a while for large databases.')) {
+        return;
+    }
+
+    try {
+        showNotification('Preparing export... Please wait.', 'success');
+
+        const response = await fetch(ADMIN_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'export_xlsx',
+                post_ids: []
+            })
+        });
+
+        // Check if response is JSON (error) or file (success)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            showNotification(data.error || 'Export failed', 'error');
+        } else {
+            // Success - download file
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `venting_posts_full_export_${Date.now()}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            showNotification('Successfully exported all posts!', 'success');
+        }
+    } catch (error) {
+        console.error('Export failed:', error);
+        showNotification('Export failed', 'error');
+    }
 }
 
 /**

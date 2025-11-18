@@ -165,6 +165,73 @@ function getLatestPosts($since) {
     }
 }
 
+/**
+ * Track online user activity
+ */
+function trackOnlineUser() {
+    try {
+        $ip = getClientIP();
+        $ipHash = hashIP($ip);
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+        $pageUrl = $_SERVER['REQUEST_URI'] ?? '/';
+
+        $db = getDBConnection();
+
+        // Insert or update user activity
+        $stmt = $db->prepare("
+            INSERT INTO online_users (ip_address, ip_hash, user_agent, page_url, last_activity)
+            VALUES (:ip, :ip_hash, :user_agent, :page_url, NOW())
+            ON DUPLICATE KEY UPDATE
+                last_activity = NOW(),
+                page_url = :page_url,
+                user_agent = :user_agent
+        ");
+
+        $stmt->execute([
+            ':ip' => $ip,
+            ':ip_hash' => $ipHash,
+            ':user_agent' => $userAgent,
+            ':page_url' => $pageUrl
+        ]);
+
+        // Clean up inactive users (older than 5 minutes)
+        $db->exec("DELETE FROM online_users WHERE last_activity < DATE_SUB(NOW(), INTERVAL 5 MINUTE)");
+
+        return ['success' => true];
+    } catch (Exception $e) {
+        if (DEBUG_MODE) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+        return ['success' => false, 'error' => 'Failed to track user'];
+    }
+}
+
+/**
+ * Get online users count
+ */
+function getOnlineUsersCount() {
+    try {
+        $db = getDBConnection();
+
+        // Clean up inactive users first
+        $db->exec("DELETE FROM online_users WHERE last_activity < DATE_SUB(NOW(), INTERVAL 5 MINUTE)");
+
+        // Count active users
+        $stmt = $db->query("SELECT COUNT(DISTINCT ip_address) as count FROM online_users");
+        $result = $stmt->fetch();
+
+        return [
+            'success' => true,
+            'count' => $result['count']
+        ];
+    } catch (Exception $e) {
+        if (DEBUG_MODE) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+        return ['success' => false, 'error' => 'Failed to get online users'];
+    }
+}
+
 // Handle API requests
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -180,12 +247,27 @@ if ($method === 'POST') {
             $since = $data['since'] ?? date('Y-m-d H:i:s', strtotime('-1 day'));
             echo json_encode(getLatestPosts($since));
             break;
+        case 'track_online':
+            echo json_encode(trackOnlineUser());
+            break;
+        case 'online_count':
+            echo json_encode(getOnlineUsersCount());
+            break;
         default:
             echo json_encode(['success' => false, 'error' => 'Invalid action']);
     }
 } elseif ($method === 'GET') {
-    $page = $_GET['page'] ?? 1;
-    echo json_encode(getPosts($page));
+    $action = $_GET['action'] ?? '';
+
+    if ($action === 'online_count') {
+        echo json_encode(getOnlineUsersCount());
+    } else {
+        // Track user on page load
+        trackOnlineUser();
+
+        $page = $_GET['page'] ?? 1;
+        echo json_encode(getPosts($page));
+    }
 } else {
     echo json_encode(['success' => false, 'error' => 'Invalid request method']);
 }
