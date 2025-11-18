@@ -843,4 +843,82 @@ body {
     #onlineUsersCount {
         font-size: 12px;
     }
+
+    .creator-brand {
+        bottom: 10px;
+        font-size: 11px;
+        padding: 6px 14px;
+    }
+
+    .brand-text::before {
+        font-size: 10px;
+    }
+}
+
+/* Creator Branding */
+.creator-brand {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 998;
+    padding: 8px 18px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideInUp 0.8s ease-out 1s both;
+}
+
+.creator-brand:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(29, 155, 240, 0.4);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(29, 155, 240, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px) scale(1.05);
+}
+
+.brand-text {
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #1d9bf0 50%,
+        #00ba7c 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+    filter: brightness(1.1);
+}
+
+.brand-text::before {
+    content: '⚡ ';
+    font-size: 12px;
+    -webkit-text-fill-color: var(--accent);
+    filter: drop-shadow(0 0 8px rgba(29, 155, 240, 0.6));
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.creator-brand:hover .brand-text {
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #1d9bf0 30%,
+        #00ba7c 60%,
+        #ffd400 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: brightness(1.3) drop-shadow(0 0 10px rgba(29, 155, 240, 0.5));
 }
