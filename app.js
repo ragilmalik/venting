@@ -391,6 +391,9 @@ function escapeHtml(text) {
  * Start online users tracking
  */
 function startOnlineUsersTracking() {
+    // Set initial count to 1 (current user) as failsafe
+    setOnlineUserCount(1);
+
     // Track this user's activity immediately
     trackUserActivity();
 
@@ -402,6 +405,28 @@ function startOnlineUsersTracking() {
         trackUserActivity();
         updateOnlineUsersCount();
     }, 30000);
+
+    // Failsafe: Update count every 5 seconds for the first minute
+    let failsafeAttempts = 0;
+    const failsafeInterval = setInterval(() => {
+        failsafeAttempts++;
+        updateOnlineUsersCount();
+
+        if (failsafeAttempts >= 12) { // 12 * 5 = 60 seconds
+            clearInterval(failsafeInterval);
+        }
+    }, 5000);
+}
+
+/**
+ * Set online user count with minimum of 1
+ */
+function setOnlineUserCount(count) {
+    const displayCount = Math.max(1, parseInt(count) || 1);
+    const element = document.getElementById('onlineUsersCount');
+    if (element) {
+        element.textContent = displayCount;
+    }
 }
 
 /**
@@ -409,15 +434,23 @@ function startOnlineUsersTracking() {
  */
 async function trackUserActivity() {
     try {
-        await fetch(`${CONFIG.API_URL}?action=track_online`, {
+        const response = await fetch(`${CONFIG.API_URL}?action=track_online`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 page_url: window.location.pathname
             })
         });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            console.warn('Failed to track user activity:', data.error);
+        }
     } catch (error) {
         console.error('Failed to track user activity:', error);
+        // Failsafe: If tracking fails, ensure count shows at least 1
+        setOnlineUserCount(1);
     }
 }
 
@@ -427,12 +460,24 @@ async function trackUserActivity() {
 async function updateOnlineUsersCount() {
     try {
         const response = await fetch(`${CONFIG.API_URL}?action=online_count`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (data.success) {
-            document.getElementById('onlineUsersCount').textContent = data.count;
+            // Ensure at least 1 user is shown (current user)
+            setOnlineUserCount(data.count);
+        } else {
+            console.warn('Failed to get online count:', data.error);
+            // Failsafe: Show at least current user
+            setOnlineUserCount(1);
         }
     } catch (error) {
         console.error('Failed to update online users count:', error);
+        // Failsafe: Show at least current user
+        setOnlineUserCount(1);
     }
 }

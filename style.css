@@ -764,6 +764,11 @@ body {
         font-size: 13px;
     }
 
+    .creator-brand {
+        bottom: 12px;
+        right: 12px;
+    }
+
     .compose-header {
         flex-wrap: wrap;
         gap: 8px;
@@ -833,7 +838,7 @@ body {
 
     .online-users-indicator {
         position: fixed !important;
-        bottom: 8px;
+        bottom: 10px;
         left: 8px;
         right: auto !important;
         padding: 6px 10px;
