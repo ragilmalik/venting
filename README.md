@@ -212,8 +212,8 @@ chmod 600 config.php  # Extra security
 ### Step 5: Admin Access
 
 **Default admin credentials:**
-- Username: `ragilmalik`
-- Password: `21Desember1994`
+- Username: `admin`
+- Password: `admin123`
 
 Access admin panel at: `https://yourdomain.com/admin.html`
 
