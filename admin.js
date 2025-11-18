@@ -9,6 +9,8 @@ let posts = [];
 let selectedPosts = [];
 let stats = {};
 let onlineUsers = 0;
+let chartData = [];
+let activityChart = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -122,6 +124,7 @@ async function handleLogout() {
 async function showDashboard() {
     await loadStats();
     await loadOnlineUsers();
+    await load7DayStats();
     await loadPosts();
 
     renderDashboard();
@@ -183,6 +186,27 @@ async function loadOnlineUsers() {
 function startOnlineUsersRefresh() {
     // Refresh every 10 seconds
     setInterval(loadOnlineUsers, 10000);
+}
+
+/**
+ * Load 7-day statistics
+ */
+async function load7DayStats() {
+    try {
+        const response = await fetch(ADMIN_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get_7day_stats' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            chartData = data.stats;
+        }
+    } catch (error) {
+        console.error('Failed to load 7-day stats:', error);
+    }
 }
 
 /**
@@ -253,6 +277,13 @@ function renderDashboard() {
             </div>
         </div>
 
+        <div class="chart-container">
+            <div class="chart-title">Last 7 Days Activity</div>
+            <div class="chart-wrapper">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+
         <div class="controls-panel">
             <div class="search-box">
                 <input type="text" id="searchInput" class="search-input" placeholder="Search posts by content, IP, or user agent...">
@@ -304,6 +335,9 @@ function renderDashboard() {
             searchPosts();
         }
     });
+
+    // Initialize chart
+    initializeChart();
 }
 
 /**
@@ -337,6 +371,127 @@ function renderPostsTable() {
             </td>
         </tr>
     `).join('');
+}
+
+/**
+ * Initialize activity chart
+ */
+function initializeChart() {
+    const ctx = document.getElementById('activityChart');
+
+    if (!ctx) return;
+
+    // Destroy existing chart if any
+    if (activityChart) {
+        activityChart.destroy();
+    }
+
+    const dates = chartData.map(d => d.date);
+    const posts = chartData.map(d => d.posts);
+    const visitors = chartData.map(d => d.visitors);
+
+    activityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Posts',
+                    data: posts,
+                    borderColor: '#1d9bf0',
+                    backgroundColor: 'rgba(29, 155, 240, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#1d9bf0',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Visitors',
+                    data: visitors,
+                    borderColor: '#00ba7c',
+                    backgroundColor: 'rgba(0, 186, 124, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#00ba7c',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#e7e9ea',
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        },
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(21, 32, 43, 0.95)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#e7e9ea',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#71767b',
+                        font: {
+                            size: 11
+                        },
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#71767b',
+                        font: {
+                            size: 11
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
 }
 
 /**
