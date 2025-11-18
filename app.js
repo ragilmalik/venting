@@ -391,11 +391,34 @@ function escapeHtml(text) {
  * Start online users tracking
  */
 function startOnlineUsersTracking() {
+    // Track this user's activity immediately
+    trackUserActivity();
+
     // Update online users count immediately
     updateOnlineUsersCount();
 
-    // Update every 30 seconds
-    setInterval(updateOnlineUsersCount, 30000);
+    // Track activity and update count every 30 seconds
+    setInterval(() => {
+        trackUserActivity();
+        updateOnlineUsersCount();
+    }, 30000);
+}
+
+/**
+ * Track current user activity
+ */
+async function trackUserActivity() {
+    try {
+        await fetch(`${CONFIG.API_URL}?action=track_online`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                page_url: window.location.pathname
+            })
+        });
+    } catch (error) {
+        console.error('Failed to track user activity:', error);
+    }
 }
 
 /**

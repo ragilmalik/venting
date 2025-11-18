@@ -168,12 +168,12 @@ function getLatestPosts($since) {
 /**
  * Track online user activity
  */
-function trackOnlineUser() {
+function trackOnlineUser($data = []) {
     try {
         $ip = getClientIP();
         $ipHash = hashIP($ip);
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
-        $pageUrl = $_SERVER['REQUEST_URI'] ?? '/';
+        $pageUrl = $data['page_url'] ?? $_SERVER['REQUEST_URI'] ?? '/';
 
         $db = getDBConnection();
 
@@ -248,7 +248,7 @@ if ($method === 'POST') {
             echo json_encode(getLatestPosts($since));
             break;
         case 'track_online':
-            echo json_encode(trackOnlineUser());
+            echo json_encode(trackOnlineUser($data));
             break;
         case 'online_count':
             echo json_encode(getOnlineUsersCount());
