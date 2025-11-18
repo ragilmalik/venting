@@ -356,6 +356,31 @@
             letter-spacing: 1px;
         }
 
+        .chart-container {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: slideInUp 0.6s ease-out 0.25s both;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
         @media (max-width: 768px) {
             .admin-container {
                 width: 90%;
@@ -394,6 +419,7 @@
 
     <div id="notification" class="notification"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>

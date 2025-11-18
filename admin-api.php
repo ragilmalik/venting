@@ -269,6 +269,56 @@ function getOnlineUsers() {
 }
 
 /**
+ * Get 7-day statistics for chart
+ */
+function get7DayStats() {
+    try {
+        $db = getDBConnection();
+        $stats = [];
+
+        // Get data for last 7 days
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-$i days"));
+            $displayDate = date('M d', strtotime("-$i days"));
+
+            // Count posts for this day
+            $stmt = $db->prepare("
+                SELECT COUNT(*) as count
+                FROM posts
+                WHERE DATE(created_at) = :date
+            ");
+            $stmt->execute([':date' => $date]);
+            $postsCount = $stmt->fetch()['count'];
+
+            // Count unique visitors (IPs) for this day
+            $stmt = $db->prepare("
+                SELECT COUNT(DISTINCT ip_address) as count
+                FROM posts
+                WHERE DATE(created_at) = :date
+            ");
+            $stmt->execute([':date' => $date]);
+            $visitorsCount = $stmt->fetch()['count'];
+
+            $stats[] = [
+                'date' => $displayDate,
+                'posts' => (int)$postsCount,
+                'visitors' => (int)$visitorsCount
+            ];
+        }
+
+        return [
+            'success' => true,
+            'stats' => $stats
+        ];
+    } catch (Exception $e) {
+        if (DEBUG_MODE) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+        return ['success' => false, 'error' => 'Failed to get 7-day stats'];
+    }
+}
+
+/**
  * Export posts to XLSX
  */
 function exportPostsToXLSX($postIds = []) {
@@ -471,6 +521,10 @@ switch ($action) {
 
     case 'get_online_users':
         echo json_encode(getOnlineUsers());
+        break;
+
+    case 'get_7day_stats':
+        echo json_encode(get7DayStats());
         break;
 
     case 'export_xlsx':
