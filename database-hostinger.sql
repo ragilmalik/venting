@@ -1,6 +1,6 @@
 -- Venting Platform Database Schema
 -- Anonymous platform with admin management
--- Note: For Hostinger, use database-hostinger.sql or make sure your database is already created in cPanel
+-- HOSTINGER VERSION: Import this directly into your Hostinger database
 
 -- Posts table
 CREATE TABLE IF NOT EXISTS posts (
