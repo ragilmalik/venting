@@ -54,18 +54,24 @@ function createPost($data) {
         $postedAt = $data['posted_at'] ?? date('Y-m-d H:i:s');
         $timezone = $data['timezone'] ?? null;
 
+        // Calculate UTC+7 time
+        $postedAtUtc7 = date('Y-m-d H:i:s', strtotime($postedAt) + (7 * 3600));
+
         // Insert into database
         $db = getDBConnection();
         $stmt = $db->prepare("
-            INSERT INTO posts (content, ip_hash, user_agent_hash, posted_at, browser_timezone)
-            VALUES (:content, :ip_hash, :user_agent_hash, :posted_at, :timezone)
+            INSERT INTO posts (content, ip_address, ip_hash, user_agent, user_agent_hash, posted_at, posted_at_utc7, browser_timezone)
+            VALUES (:content, :ip_address, :ip_hash, :user_agent, :user_agent_hash, :posted_at, :posted_at_utc7, :timezone)
         ");
 
         $stmt->execute([
             ':content' => $content,
+            ':ip_address' => $ip,
             ':ip_hash' => $ipHash,
+            ':user_agent' => $userAgent,
             ':user_agent_hash' => $userAgentHash,
             ':posted_at' => $postedAt,
+            ':posted_at_utc7' => $postedAtUtc7,
             ':timezone' => $timezone
         ]);
 
