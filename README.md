@@ -339,8 +339,8 @@ https://yourdomain.com/admin.html
 
 **Default Admin Login:**
 ```
-Username: ragilmalik
-Password: 21Desember1994
+Username: admin
+Password: admin123
 ```
 
 **🚨 CHANGE THIS IMMEDIATELY! See the security section below!**
