@@ -44,9 +44,9 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
     FOREIGN KEY (admin_id) REFERENCES admin_users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insert default admin user (username: ragilmalik, password: 21Desember1994)
+-- Insert default admin user (username: admin, password: admin123)
 INSERT INTO admin_users (username, password_hash) VALUES
-('ragilmalik', '$2y$12$wxHIcbIXD06TlX5nyZKmZ.tnjJ0ld6tbZVD7pdAxBZKXKF2R2XMM.')
+('admin', '$2a$12$qYGUCIA/5uTJqzjXTv1mz.1spGWJowTWgyRIaovjygVVgg4OFrfC6')
 ON DUPLICATE KEY UPDATE username = username;
 
 -- Online users tracking table
